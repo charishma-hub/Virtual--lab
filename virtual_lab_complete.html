@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Virtual Lab - Online Code Execution</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+:root{--bg:#08101d;--panel:#0d1727;--panel2:#101d30;--border:#26364d;--text:#eef3fb;--muted:#93a1b6;--blue:#315fff;--purple:#762cff;--green:#19b95a;--red:#ef5350}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{height:80px;background:#0a1322;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:28px}
+.logo{display:flex;align-items:center;gap:11px;min-width:250px}.logoIcon{width:44px;height:44px;border:3px solid #396cff;border-radius:10px;display:grid;place-items:center;color:#67a0ff;font-weight:bold;font-size:19px}.logo h2{font-size:20px}.logo small{color:var(--muted)}
+.topnav{display:flex;gap:26px;flex:1}.topnav button,.profile button{background:none;border:0;color:#d7dfeb}.topnav button:hover{color:#8f73ff}
+.profile{display:flex;align-items:center;gap:9px}.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#704cff,#ed5fae);display:grid;place-items:center}
+.layout{display:flex;min-height:calc(100vh - 80px)}
+aside{width:230px;background:#0a1322;border-right:1px solid var(--border);padding:18px 14px}
+.side{width:100%;border:0;background:transparent;color:#bdc8d8;text-align:left;padding:13px 14px;border-radius:7px;margin-bottom:6px}.side:hover,.side.active{background:linear-gradient(90deg,#2944e8,#702be2);color:#fff}.side span{display:inline-block;width:25px}
+.sideCard{margin-top:55px;border:1px solid var(--border);border-radius:8px;text-align:center;padding:22px 12px;color:var(--muted);line-height:1.5}
+main{flex:1;padding:22px;overflow:auto}.page{display:none}.page.active{display:block}
+.title{font-size:27px;margin-bottom:7px}.sub{color:var(--muted);margin-bottom:22px}
+.editorGrid{display:grid;grid-template-columns:minmax(450px,1fr) 300px;gap:15px}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:15px}
+.editorHead{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;padding:0 13px}.tab{background:#18253a;padding:9px 15px;border-radius:5px}.iconBtn{border:0;background:transparent;color:#c9d3e1;font-size:22px}
+.codeWrap{display:flex;min-height:420px;background:#07101c}.lines{width:48px;padding:18px 9px;text-align:right;color:#526178;background:#091321;font:14px/1.6 Consolas,monospace;user-select:none}.code{flex:1;border:0;outline:0;resize:vertical;background:#07101c;color:#dce8f8;padding:18px 14px;font:14px/1.6 Consolas,monospace;min-height:420px}.statusbar{padding:8px 13px;color:#738299;border-top:1px solid var(--border);font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:15px}.panel h3{font-size:15px;margin-bottom:13px}
+select,input,textarea{width:100%;background:#091321;color:#fff;border:1px solid #34465e;border-radius:5px;padding:10px;outline:none}
+.action{width:100%;border:0;border-radius:5px;padding:12px;margin-bottom:9px;color:#fff;font-weight:bold}.run{background:var(--green)}.compile{background:#1664e9}.clear{background:#6b2bd8}.save{background:#29394f}.action:hover{filter:brightness(1.12)}
+.info{display:flex;justify-content:space-between;color:var(--muted);padding:7px 0}.badge{padding:4px 9px;border-radius:5px;background:#198e49;color:#fff}
+.consoleGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px}.console{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;min-height:185px}.consoleTitle{padding:11px 13px;border-bottom:1px solid var(--border);font-weight:bold}.consoleBody{padding:14px;white-space:pre-wrap;color:#b9c7d9;font:13px Consolas,monospace}.error{color:#ff7373}.success{color:#53e78b}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden}th,td{padding:13px;border-bottom:1px solid var(--border);text-align:left}th{color:#9eabc0}td{color:#d7e0ec}.btn{background:#315fff;color:#fff;border:0;border-radius:5px;padding:8px 13px}.danger{background:#c93c46}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.card{background:var(--panel);border:1px solid var(--border);padding:20px;border-radius:9px}.card:hover{border-color:#6651ff}.card h3{margin:8px 0}.card p{color:var(--muted);line-height:1.5}.big{font-size:31px}
+.testHead{display:flex;justify-content:space-between;align-items:center}.add{background:#6b35df;color:#fff;border:0;border-radius:5px;padding:8px 12px}
+.modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.show{display:flex}.modalBox{background:#101b2d;border:1px solid var(--border);border-radius:10px;width:min(520px,100%);padding:20px}.modalBox h2{margin-bottom:15px}.modalBox label{display:block;color:#9aa8bc;margin:12px 0 6px}.modalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+footer{text-align:center;color:#65738a;border-top:1px solid var(--border);padding:17px;margin-top:28px}
+@media(max-width:950px){.topnav{display:none}.editorGrid{grid-template-columns:1fr}.consoleGrid{grid-template-columns:1fr}}
+@media(max-width:600px){aside{width:62px;padding:10px 5px}.side{font-size:0;text-align:center;padding:13px 4px}.side span{font-size:19px;width:auto}.sideCard{display:none}.logo{min-width:auto}.logo h2,.logo small{display:none}main{padding:12px}.editorGrid{grid-template-columns:1fr}.codeWrap,.code{min-height:350px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logoIcon">&lt;/&gt;</div><div><h2>VIRTUAL LAB</h2><small>Online Code Execution</small></div></div>
+  <nav class="topnav">
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('labs')">Labs</button>
+    <button onclick="showPage('programs')">My Programs</button>
+    <button onclick="showPage('saved')">Saved Codes</button>
+    <button onclick="showPage('practicals')">Practicals</button>
+    <button onclick="showPage('help')">Help</button>
+  </nav>
+  <div class="profile"><div class="avatar">👩</div><span>Student</span>⌄</div>
+</header>
+
+<div class="layout">
+<aside>
+  <button class="side active" onclick="showPage('editor')"><span>💻</span>Code Editor</button>
+  <button class="side" onclick="showPage('programs')"><span>📁</span>My Programs</button>
+  <button class="side" onclick="showPage('history')"><span>↶</span>History</button>
+  <button class="side" onclick="showPage('saved')"><span>🔖</span>Saved Codes</button>
+  <button class="side" onclick="showPage('practicals')"><span>⚗</span>Practicals</button>
+  <button class="side" onclick="showPage('help')"><span>?</span>Help</button>
+  <button class="side" onclick="logout()"><span>⏻</span>Logout</button>
+  <div class="sideCard"><div class="big">💻</div><b>Write, Compile & Run</b><br><small>Write your code directly in the browser.</small></div>
+</aside>
+
+<main>
+
+<section id="editor" class="page active">
+  <div class="title">Online Code Editor</div><div class="sub">Write your code, select language and run it.</div>
+  <div class="editorGrid">
+    <div class="box">
+      <div class="editorHead"><div class="tab" id="fileName">main.c</div><button class="iconBtn" onclick="newFile()">＋</button></div>
+      <div class="codeWrap"><div class="lines" id="lineNumbers">1</div><textarea id="code" class="code" spellcheck="false" oninput="updateLines()">#include &lt;stdio.h&gt;
+
+int main() {
+    int n, i, sum = 0;
+
+    printf("Enter a number: ");
+    scanf("%d", &n);
+
+    for(i = 1; i &lt;= n; i++) {
+        sum = sum + i;
+    }
+
+    printf("Sum = %d\n", sum);
+
+    return 0;
+}</textarea></div>
+      <div class="statusbar">Ln <span id="cursorLn">1</span>, Col 1 &nbsp; | &nbsp; Spaces: 4 &nbsp; | &nbsp; UTF-8 &nbsp; | &nbsp; C <span style="float:right">● Auto Save</span></div>
+    </div>
+
+    <div>
+      <div class="panel"><h3>Language</h3><select id="language" onchange="changeLanguage()"><option>C (GCC 11.2.0)</option><option>C++</option><option>Java</option><option>Python</option></select></div>
+      <div class="panel">
+        <h3>Run Code</h3>
+        <button class="action run" onclick="runCode()">▶ Run Code</button>
+        <button class="action compile" onclick="compileCode()">⟳ Compile</button>
+        <button class="action clear" onclick="clearCode()">⟳ Clear</button>
+        <button class="action save" onclick="saveCode()">💾 Save Code</button>
+      </div>
+      <div class="panel"><h3>Execution Info</h3>
+        <div class="info"><span>Status</span><span id="status" class="badge">Ready</span></div>
+        <div class="info"><span>Execution Time</span><span id="time">-</span></div>
+        <div class="info"><span>Memory Used</span><span id="memory">-</span></div>
+        <div class="info"><span>Exit Code</span><span id="exit">-</span></div>
+      </div>
+      <div class="panel"><h3>Upload Code</h3><input type="file" id="fileInput" accept=".c,.cpp,.java,.py,.txt" onchange="uploadCode()"></div>
+    </div>
+  </div>
+
+  <div class="consoleGrid">
+    <div class="console"><div class="consoleTitle">🟢 Output Console</div><div id="output" class="consoleBody">Output will appear here...</div></div>
+    <div class="console"><div class="consoleTitle">🔴 Error Console</div><div id="error" class="consoleBody error">No errors.</div></div>
+    <div class="console"><div class="consoleTitle">🔵 Input (stdin)</div><div style="padding:14px"><textarea id="input" style="height:110px">5</textarea></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="testHead"><h3>🧪 Test Cases</h3><button class="add" onclick="addTestCase()">＋ Add Test Case</button></div>
+    <table><thead><tr><th>Test Case</th><th>Input</th><th>Expected</th><th>Status</th><th>Action</th></tr></thead><tbody id="tests"></tbody></table>
+  </div>
+</section>
+
+<section id="home" class="page">
+  <div class="title">Welcome to Virtual Lab 👋</div><div class="sub">Practice programming and complete your practicals online.</div>
+  <div class="cards">
+    <div class="card" onclick="showPage('editor')"><div class="big">💻</div><h3>Code Editor</h3><p>Write, compile and run programs.</p></div>
+    <div class="card" onclick="showPage('labs')"><div class="big">🧪</div><h3>Programming Labs</h3><p>Practice different programming concepts.</p></div>
+    <div class="card" onclick="showPage('programs')"><div class="big">📁</div><h3>My Programs</h3><p>View and open your saved programs.</p></div>
+    <div class="card" onclick="showPage('practicals')"><div class="big">📝</div><h3>Practicals</h3><p>Complete laboratory experiments.</p></div>
+  </div>
+</section>
+
+<section id="labs" class="page">
+  <div class="title">Programming Labs</div><div class="sub">Select a laboratory to start practicing.</div>
+  <div class="cards">
+    <div class="card" onclick="selectLab('C (GCC 11.2.0)')"><div class="big">🔵</div><h3>C Programming</h3><p>Variables, loops, arrays, functions and pointers.</p></div>
+    <div class="card" onclick="selectLab('C++')"><div class="big">🟣</div><h3>C++ Programming</h3><p>OOP, classes, inheritance and STL.</p></div>
+    <div class="card" onclick="selectLab('Java')"><div class="big">☕</div><h3>Java Programming</h3><p>Core Java and object-oriented programming.</p></div>
+    <div class="card" onclick="selectLab('Python')"><div class="big">🐍</div><h3>Python Programming</h3><p>Python fundamentals and problem solving.</p></div>
+  </div>
+</section>
+
+<section id="programs" class="page">
+  <div class="title">My Programs</div><div class="sub">All programs saved on this browser.</div>
+  <table><thead><tr><th>Program</th><th>Language</th><th>Saved</th><th>Action</th></tr></thead><tbody id="programList"></tbody></table>
+</section>
+
+<section id="saved" class="page">
+  <div class="title">Saved Codes</div><div class="sub">Open, download or delete your saved source code.</div>
+  <div id="savedList"></div>
+</section>
+
+<section id="history" class="page">
+  <div class="title">Execution History</div><div class="sub">Your recent simulations.</div>
+  <table><thead><tr><th>Input</th><th>Output</th><th>Execution Time</th><th>Date</th></tr></thead><tbody id="historyList"></tbody></table>
+</section>
+
+<section id="practicals" class="page">
+  <div class="title">Practical Experiments</div><div class="sub">Select an experiment to load it into the editor.</div>
+  <table><thead><tr><th>No.</th><th>Experiment</th><th>Objective</th><th>Action</th></tr></thead><tbody>
+    <tr><td>1</td><td>Sum of N Natural Numbers</td><td>Calculate 1 + 2 + ... + N</td><td><button class="btn" onclick="loadExperiment(1)">Open</button></td></tr>
+    <tr><td>2</td><td>Factorial of a Number</td><td>Find factorial using a loop</td><td><button class="btn" onclick="loadExperiment(2)">Open</button></td></tr>
+    <tr><td>3</td><td>Prime Number</td><td>Check whether a number is prime</td><td><button class="btn" onclick="loadExperiment(3)">Open</button></td></tr>
+    <tr><td>4</td><td>Fibonacci Series</td><td>Generate Fibonacci numbers</td><td><button class="btn" onclick="loadExperiment(4)">Open</button></td></tr>
+  </tbody></table>
+</section>
+
+<section id="help" class="page">
+  <div class="title">Help Center</div><div class="sub">Quick guide for using Virtual Lab.</div>
+  <div class="cards">
+    <div class="card"><div class="big">💻</div><h3>Code Editor</h3><p>Select a language and write your program. The line numbers update automatically.</p></div>
+    <div class="card"><div class="big">▶️</div><h3>Run Code</h3><p>Enter input and press Run Code. This front-end version simulates supported practical programs.</p></div>
+    <div class="card"><div class="big">💾</div><h3>Save Code</h3><p>Saved programs are stored in browser localStorage and are available from My Programs and Saved Codes.</p></div>
+    <div class="card"><div class="big">🧪</div><h3>Test Cases</h3><p>Add your own input and expected output, then test the current simulation.</p></div>
+  </div>
+</section>
+
+<footer>© 2026 Virtual Lab. All rights reserved. ❤️ Designed for Students, Built for Learning.</footer>
+</main>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modalBox">
+    <h2>Add Test Case</h2>
+    <label>Input</label><input id="newInput" type="number" value="5">
+    <label>Expected Output</label><input id="newExpected" type="number" value="15">
+    <div class="modalActions"><button class="btn danger" onclick="closeModal()">Cancel</button><button class="btn" onclick="createTestCase()">Add Test</button></div>
+  </div>
+</div>
+
+<script>
+const defaultCode=`#include <stdio.h>
+
+int main() {
+    int n, i, sum = 0;
+
+    printf("Enter a number: ");
+    scanf("%d", &n);
+
+    for(i = 1; i <= n; i++) {
+        sum = sum + i;
+    }
+
+    printf("Sum = %d\\n", sum);
+
+    return 0;
+}`;
+
+let tests=JSON.parse(localStorage.getItem("vlTests")||"null")||[
+ {input:5,expected:15,status:"Not Run"},
+ {input:10,expected:55,status:"Not Run"},
+ {input:3,expected:6,status:"Not Run"}
+];
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".side").forEach(b=>b.classList.remove("active"));
+ const map={editor:0,programs:1,history:2,saved:3,practicals:4,help:5};
+ if(map[id]!==undefined) document.querySelectorAll(".side")[map[id]].classList.add("active");
+ if(id==="programs")loadPrograms();
+ if(id==="saved")loadSaved();
+ if(id==="history")loadHistory();
+}
+
+function updateLines(){
+ const n=document.getElementById("code").value.split("\n").length;
+ document.getElementById("lineNumbers").innerHTML=Array.from({length:n},(_,i)=>i+1).join("<br>");
+}
+
+document.getElementById("code").addEventListener("keyup",e=>{
+ const pos=document.getElementById("code").selectionStart;
+ const text=document.getElementById("code").value.slice(0,pos);
+ document.getElementById("cursorLn").textContent=text.split("\n").length;
+});
+document.getElementById("code").addEventListener("scroll",()=>{document.getElementById("lineNumbers").scrollTop=document.getElementById("code").scrollTop});
+updateLines();
+
+function sumFor(n){if(n<0)return 0;return n*(n+1)/2}
+
+function runCode(){
+ const input=document.getElementById("input").value.trim();
+ const n=Number(input);
+ const start=performance.now();
+ setStatus("Running","#d99019");
+ if(input===""||!Number.isInteger(n)){
+  document.getElementById("error").textContent="Runtime Error: Enter a valid integer.";
+  setStatus("Error","#d83b45");return;
+ }
+ setTimeout(()=>{
+  const result=sumFor(n);
+  const elapsed=(performance.now()-start)/1000;
+  document.getElementById("output").textContent=`Enter a number: ${n}\nSum = ${result}`;
+  document.getElementById("error").textContent="No errors.";
+  document.getElementById("time").textContent=elapsed.toFixed(6)+" sec";
+  document.getElementById("memory").textContent=(1024+Math.floor(Math.random()*600))+" KB";
+  document.getElementById("exit").textContent="0";
+  setStatus("Success","#198e49");
+  runTests();
+  saveHistory(input,result,elapsed);
+ },80);
+}
+
+function setStatus(t,c){const s=document.getElementById("status");s.textContent=t;s.style.background=c}
+
+function compileCode(){
+ const code=document.getElementById("code").value.trim();
+ if(!code){document.getElementById("error").textContent="Compilation Error: Code is empty.";setStatus("Error","#d83b45");return}
+ document.getElementById("error").textContent="Compilation successful.";
+ setStatus("Compiled","#1767e9");
+}
+
+function clearCode(){
+ document.getElementById("code").value="";
+ document.getElementById("input").value="";
+ document.getElementById("output").textContent="Output will appear here...";
+ document.getElementById("error").textContent="No errors.";
+ document.getElementById("time").textContent="-";document.getElementById("memory").textContent="-";document.getElementById("exit").textContent="-";setStatus("Ready","#198e49");updateLines();
+}
+
+function saveCode(){
+ const code=document.getElementById("code").value.trim();
+ if(!code){alert("Please write some code first.");return}
+ const name=prompt("Enter program name:","My Program");
+ if(!name)return;
+ const arr=JSON.parse(localStorage.getItem("vlPrograms")||"[]");
+ arr.push({name,language:document.getElementById("language").value,code,date:new Date().toLocaleString()});
+ localStorage.setItem("vlPrograms",JSON.stringify(arr));
+ alert("Program saved successfully!");
+}
+
+function loadPrograms(){
+ const arr=JSON.parse(localStorage.getItem("vlPrograms")||"[]"),body=document.getElementById("programList");
+ body.innerHTML=arr.length?arr.map((p,i)=>`<tr><td>${esc(p.name)}</td><td>${esc(p.language)}</td><td>${esc(p.date)}</td><td><button class="btn" onclick="openProgram(${i})">Open</button> <button class="btn danger" onclick="deleteProgram(${i})">Delete</button></td></tr>`).join(""):`<tr><td colspan="4">No programs saved yet.</td></tr>`;
+}
+function loadSaved(){
+ const arr=JSON.parse(localStorage.getItem("vlPrograms")||"[]"),box=document.getElementById("savedList");
+ box.innerHTML=arr.length?arr.map((p,i)=>`<div class="card" style="margin-bottom:14px"><h3>💾 ${esc(p.name)}</h3><p>${esc(p.language)} • ${esc(p.date)}</p><br><button class="btn" onclick="openProgram(${i})">Open Code</button> <button class="btn" onclick="downloadCode(${i})">Download</button> <button class="btn danger" onclick="deleteProgram(${i})">Delete</button></div>`).join(""):`<div class="card"><p>No saved codes yet.</p></div>`;
+}
+function openProgram(i){
+ const p=JSON.parse(localStorage.getItem("vlPrograms")||"[]")[i];if(!p)return;
+ document.getElementById("code").value=p.code;document.getElementById("language").value=p.language;document.getElementById("fileName").textContent=p.name+".txt";updateLines();showPage("editor");
+}
+function deleteProgram(i){
+ const arr=JSON.parse(localStorage.getItem("vlPrograms")||"[]");arr.splice(i,1);localStorage.setItem("vlPrograms",JSON.stringify(arr));loadPrograms();loadSaved();
+}
+function downloadCode(i){
+ const p=JSON.parse(localStorage.getItem("vlPrograms")||"[]")[i];const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([p.code],{type:"text/plain"}));a.download=p.name.replace(/\s+/g,"_")+".txt";a.click();URL.revokeObjectURL(a.href);
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+function loadHistory(){
+ const h=JSON.parse(localStorage.getItem("vlHistory")||"[]"),body=document.getElementById("historyList");
+ body.innerHTML=h.length?h.map(x=>`<tr><td>${esc(x.input)}</td><td>${esc(x.output)}</td><td>${x.time.toFixed(6)} sec</td><td>${esc(x.date)}</td></tr>`).join(""):`<tr><td colspan="4">No execution history yet.</td></tr>`;
+}
+function saveHistory(input,result,time){
+ const h=JSON.parse(localStorage.getItem("vlHistory")||"[]");
+ h.unshift({input,output:result,time,date:new Date().toLocaleString()});localStorage.setItem("vlHistory",JSON.stringify(h.slice(0,20)));
+}
+function runTests(){
+ tests.forEach(t=>t.status=sumFor(Number(t.input))===Number(t.expected)?"Passed":"Failed");
+ localStorage.setItem("vlTests",JSON.stringify(tests));renderTests();
+}
+function renderTests(){
+ document.getElementById("tests").innerHTML=tests.map((t,i)=>`<tr><td>Test Case ${i+1}</td><td>${t.input}</td><td>${t.expected}</td><td class="${t.status==="Passed"?"success":t.status==="Failed"?"error":""}">${t.status}</td><td><button class="btn danger" onclick="removeTest(${i})">Delete</button></td></tr>`).join("");
+}
+function addTestCase(){document.getElementById("modal").classList.add("show")}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function createTestCase(){
+ const input=Number(document.getElementById("newInput").value),expected=Number(document.getElementById("newExpected").value);
+ if(!Number.isInteger(input)||!Number.isFinite(expected)){alert("Enter valid values.");return}
+ tests.push({input,expected,status:"Not Run"});localStorage.setItem("vlTests",JSON.stringify(tests));renderTests();closeModal();
+}
+function removeTest(i){tests.splice(i,1);localStorage.setItem("vlTests",JSON.stringify(tests));renderTests()}
+
+function uploadCode(){
+ const f=document.getElementById("fileInput").files[0];if(!f)return;
+ const r=new FileReader();r.onload=e=>{document.getElementById("code").value=e.target.result;document.getElementById("fileName").textContent=f.name;updateLines()};r.readAsText(f);
+}
+function newFile(){
+ document.getElementById("code").value=defaultCode;document.getElementById("fileName").textContent="main.c";updateLines();
+}
+function changeLanguage(){
+ const v=document.getElementById("language").value;
+ document.getElementById("fileName").textContent=v.startsWith("C++")?"main.cpp":v.startsWith("Java")?"Main.java":v.startsWith("Python")?"main.py":"main.c";
+}
+function selectLab(lang){document.getElementById("language").value=lang;changeLanguage();showPage("editor")}
+function loadExperiment(n){
+ const codes=[
+ defaultCode,
+ `#include <stdio.h>
+int main(){
+ int n,f=1,i;
+ scanf("%d",&n);
+ for(i=1;i<=n;i++) f*=i;
+ printf("Factorial = %d",f);
+ return 0;
+}`,
+ `#include <stdio.h>
+int main(){
+ int n,i,prime=1;
+ scanf("%d",&n);
+ if(n<2) prime=0;
+ for(i=2;i*i<=n;i++) if(n%i==0) prime=0;
+ printf(prime ? "Prime" : "Not Prime");
+ return 0;
+}`,
+ `#include <stdio.h>
+int main(){
+ int n,a=0,b=1,c,i;
+ scanf("%d",&n);
+ for(i=0;i<n;i++){printf("%d ",a);c=a+b;a=b;b=c;}
+ return 0;
+}`];
+ document.getElementById("code").value=codes[n-1];document.getElementById("language").value="C (GCC 11.2.0)";changeLanguage();updateLines();showPage("editor");
+}
+function logout(){alert("Logout is a demo action in this front-end version.")}
+
+renderTests();
+loadPrograms();
+loadHistory();
+</script>
+</body>
+</html>
