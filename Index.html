@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Virtual Lab</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+body{
+    margin:0;
+    background:#07101f;
+    color:white;
+}
+
+nav{
+    background:#080f1d;
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    border-bottom:1px solid #29374d;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+    margin-right:20px;
+}
+
+.logo span{
+    color:#704cff;
+}
+
+nav button,
+.side button{
+    background:none;
+    border:0;
+    color:white;
+    padding:10px;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+nav button:hover,
+.side button:hover{
+    background:#1a2940;
+}
+
+.layout{
+    display:flex;
+    min-height:calc(100vh - 70px);
+}
+
+.side{
+    width:200px;
+    background:#091321;
+    padding:20px;
+    border-right:1px solid #29374d;
+}
+
+.side button{
+    width:100%;
+    text-align:left;
+    margin:4px 0;
+}
+
+.content{
+    flex:1;
+    padding:20px;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.subtitle{
+    color:#9ba7b8;
+}
+
+.editorbox,
+.box,
+.card{
+    background:#0b1423;
+    border:1px solid #29374d;
+    border-radius:7px;
+    margin-top:15px;
+}
+
+.tabs{
+    padding:12px;
+    border-bottom:1px solid #29374d;
+}
+
+.code{
+    width:100%;
+    height:350px;
+    background:#0b1423;
+    color:#dce6f5;
+    border:0;
+    outline:0;
+    padding:15px;
+    font-family:monospace;
+    resize:none;
+}
+
+.buttons{
+    padding:15px;
+}
+
+.btn{
+    border:0;
+    color:white;
+    padding:11px 18px;
+    border-radius:5px;
+    margin:4px;
+    cursor:pointer;
+}
+
+.run{
+    background:#13b839;
+}
+
+.compile{
+    background:#1267dd;
+}
+
+.clear{
+    background:#592be0;
+}
+
+.save{
+    background:#39465a;
+}
+
+.consolearea{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:15px;
+}
+
+.box h3{
+    padding:12px;
+    margin:0;
+    border-bottom:1px solid #29374d;
+}
+
+.output h3{
+    color:#55db73;
+}
+
+.error h3{
+    color:#ff5c5c;
+}
+
+.input h3{
+    color:#50b2ff;
+}
+
+.console{
+    padding:15px;
+    min-height:150px;
+    font-family:monospace;
+    white-space:pre-wrap;
+}
+
+#stdin{
+    width:100%;
+    height:120px;
+    background:#07101f;
+    color:white;
+    border:1px solid #29374d;
+    padding:10px;
+    resize:none;
+    outline:none;
+}
+
+.card{
+    padding:20px;
+}
+
+.card button{
+    background:#1767df;
+    color:white;
+    border:0;
+    padding:9px 15px;
+    border-radius:5px;
+}
+
+footer{
+    text-align:center;
+    color:#788499;
+    padding:25px;
+}
+
+@media(max-width:800px){
+
+    .consolearea{
+        grid-template-columns:1fr;
+    }
+
+    .side{
+        width:160px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+
+<div class="logo">
+VIRTUAL <span>LAB</span>
+</div>
+
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('labs')">Labs</button>
+<button onclick="showPage('editor')">My Programs</button>
+<button onclick="showPage('saved')">Saved Codes</button>
+<button onclick="showPage('practicals')">Practicals</button>
+<button onclick="showPage('help')">Help</button>
+
+</nav>
+
+<div class="layout">
+
+<div class="side">
+
+<button onclick="showPage('home')">🏠 Home</button>
+
+<button onclick="showPage('editor')">
+💻 Code Editor
+</button>
+
+<button onclick="showPage('programs')">
+📁 My Programs
+</button>
+
+<button onclick="showPage('history')">
+🕘 History
+</button>
+
+<button onclick="showPage('saved')">
+🔖 Saved Codes
+</button>
+
+<button onclick="showPage('practicals')">
+🧪 Practicals
+</button>
+
+<button onclick="showPage('help')">
+❓ Help
+</button>
+
+</div>
+
+<div class="content">
+
+<div id="home" class="page active">
+
+<h1>Welcome to Virtual Lab</h1>
+
+<p class="subtitle">
+Online Programming Laboratory
+</p>
+
+<div class="card">
+
+<h2>💻 Code Editor</h2>
+
+<p>
+Write your own C program in the editor.
+</p>
+
+<button onclick="showPage('editor')">
+Open Editor
+</button>
+
+</div>
+
+</div>
+
+
+<div id="editor" class="page">
+
+<h1>Online Code Editor</h1>
+
+<p class="subtitle">
+Write your own C program below.
+</p>
+
+<div class="editorbox">
+
+<div class="tabs">
+📄 main.c
+</div>
+
+<textarea
+id="code"
+class="code"
+placeholder="Type your C program here...
+
+Example:
+
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf(&quot;Hello World&quot;);
+    return 0;
+}"
+></textarea>
+
+<div class="buttons">
+
+<button class="btn run" onclick="runCode()">
+▶ Run Code
+</button>
+
+<button class="btn compile" onclick="compileCode()">
+Compile
+</button>
+
+<button class="btn clear" onclick="clearCode()">
+Clear
+</button>
+
+<button class="btn save" onclick="saveCode()">
+Save Code
+</button>
+
+</div>
+
+</div>
+
+<div class="consolearea">
+
+<div class="box output">
+
+<h3>🟢 Output Console</h3>
+
+<div id="output" class="console">
+Ready to execute...
+</div>
+
+</div>
+
+<div class="box error">
+
+<h3>🔴 Error Console</h3>
+
+<div id="error" class="console">
+No errors.
+</div>
+
+</div>
+
+<div class="box input">
+
+<h3>🔵 Input (stdin)</h3>
+
+<div class="console">
+
+<textarea
+id="stdin"
+placeholder="Enter program input here..."
+></textarea>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="labs" class="page">
+
+<h1>Labs</h1>
+
+<div class="card">
+
+<h2>C Programming Lab</h2>
+
+<p>Practice C programming.</p>
+
+<button onclick="showPage('editor')">
+Open Lab
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Java Programming Lab</h2>
+
+<p>Practice Java programs.</p>
+
+</div>
+
+<div class="card">
+
+<h2>Python Programming Lab</h2>
+
+<p>Practice Python programs.</p>
+
+</div>
+
+</div>
+
+
+<div id="programs" class="page">
+
+<h1>My Programs</h1>
+
+<div class="card">
+
+<h2>main.c</h2>
+
+<p>Your C program.</p>
+
+<button onclick="showPage('editor')">
+Open
+</button>
+
+</div>
+
+</div>
+
+
+<div id="saved" class="page">
+
+<h1>Saved Codes</h1>
+
+<div class="card">
+
+<h2>📄 main.c</h2>
+
+<p>Your saved program.</p>
+
+<button onclick="loadCode()">
+Load Code
+</button>
+
+</div>
+
+</div>
+
+
+<div id="history" class="page">
+
+<h1>History</h1>
+
+<div class="card">
+
+<p id="historyText">
+No execution yet.
+</p>
+
+</div>
+
+</div>
+
+
+<div id="practicals" class="page">
+
+<h1>Practicals</h1>
+
+<div class="card">
+
+<h2>Experiment 1</h2>
+
+<p>
+Write a C program to print Hello World.
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>Experiment 2</h2>
+
+<p>
+Write a C program to add two numbers.
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>Experiment 3</h2>
+
+<p>
+Write a C program to find factorial.
+</p>
+
+</div>
+
+</div>
+
+
+<div id="help" class="page">
+
+<h1>Help</h1>
+
+<div class="card">
+
+<h2>How to use?</h2>
+
+<p>
+1. Type your C program in the editor.<br><br>
+2. Enter input in Input (stdin).<br><br>
+3. Click Compile.<br><br>
+4. Click Run Code.<br><br>
+5. See the result in Output Console.
+</p>
+
+</div>
+
+</div>
+
+
+<footer>
+© 2026 Virtual Lab
+</footer>
+
+</div>
+</div>
+
+<script src="index.js"></script>
+
+</body>
+   </html>
